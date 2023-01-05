@@ -11,7 +11,7 @@ public interface DefaultMinimapZoomConfig extends Config
 			name = "Default zoom level",
 			keyName = "zoomLevel",
 			description = "Zoom has to be enabled in the Minimap plugin and the Minimap plugin has to be enabled as well!<br>" +
-					"This is the number of pixels per tile on the minimap. A higher number is more zoomed out; a lower number is more zoomed in.",
+					"This is the number of pixels per tile on the minimap. A higher number is more zoomed in; a lower number is more zoomed out.",
 			position = 0
 	)
 	default MinimapZoomLevel zoomLevel()
