@@ -142,7 +142,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 
 	@Override
 	public MouseEvent mousePressed(MouseEvent mouseEvent) {
-		if (zoomWhenRightClick && client.isMinimapZoom() && mouseEvent.getButton() == 3) {
+		if (zoomWhenRightClick && client.isMinimapZoom() && mouseEvent.getButton() == 3 && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 			if (processedMinimapArea != null && processedMinimapArea.contains(mouseEvent.getPoint())) { //If right-clicked on minimap
 				client.setMinimapZoom(zoomLevel);
 				mouseEvent.consume(); //If this is racey with the internal right-click on minimap code, or if this might trigger Jagex's anti-cheat, please let me know. However, a simple consume should definitely not trigger anti-cheat.
