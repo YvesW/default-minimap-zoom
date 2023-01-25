@@ -145,9 +145,8 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	public void onGameTick(GameTick gameTick) {
 		//Account for dragging the minimap. Earlier experimentation with onDraggingWidgetChanged, getDraggedWidget, getDraggedOnWidget, client.isDraggingWidget was unsuccesful.
 		//Could potentially also check for client.isResized(), but this will account for any other discrepancies in the bounds as well.
-		if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom()) {
-			Widget MinimapWidget = getMinimapWidget();
-			Rectangle currentMinimapBounds = MinimapWidget.getBounds();
+		if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom() && getMinimapWidget() != null) {
+			Rectangle currentMinimapBounds = getMinimapWidget().getBounds();
 			if (previousMinimapBounds != null && !previousMinimapBounds.equals(currentMinimapBounds)) {
 				clientThread.invokeLater(() -> {
 					getProcessedMinimapArea();
@@ -229,7 +228,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	@Override
 	public MouseEvent mouseDragged(MouseEvent mouseEvent) {
 		//Can add a hotkey listener and get the drag hoykey usig configmanager, but even then it looks like mousePressed or mouseDragged doesn't work while dragging widgets (at least with isAltDown)...
-		//Will get fixed while flicking the plugin on/off or hopping anyway.
+		//Will get fixed while flicking the plugin on/off or hopping anyway. => Added onGameTick check
 		return mouseEvent;
 	}
 

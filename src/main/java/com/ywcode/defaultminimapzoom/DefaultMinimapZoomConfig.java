@@ -52,8 +52,7 @@ public interface DefaultMinimapZoomConfig extends Config
 	@ConfigItem(
 			keyName = "zoomWhenRightClick",
 			name = "Set zoom when right-clicking minimap",
-			description = "Set the default zoom when you right-click the minimap<br>" +
-			"If you drag the minimap widget in resizable mode, please hop worlds or quickly toggle either this setting or the plugin to fix this setting.",
+			description = "Set the default zoom when you right-click the minimap",
 			position = 4
 	)
 	default boolean zoomWhenRightClick() {
