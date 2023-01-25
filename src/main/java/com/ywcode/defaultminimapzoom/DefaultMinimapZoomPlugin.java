@@ -37,6 +37,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private boolean loggedInOnce = false;
 	private Area preprocessedMinimapArea;
 	private Area processedMinimapArea;
+	private static Rectangle previousMinimapBounds;
 
 	@Inject
 	private Client client;
@@ -140,6 +141,21 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 		}
 	}
 
+	@Subscribe
+	public void onGameTick(GameTick gameTick) {
+		//Account for dragging the minimap. Earlier experimentation with onDraggingWidgetChanged, getDraggedWidget, getDraggedOnWidget, client.isDraggingWidget was unsuccesful.
+		//Could potentially also check for client.isResized(), but this will account for any other discrepancies in the bounds as well.
+		if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom()) {
+			Widget MinimapWidget = getMinimapWidget();
+			Rectangle currentMinimapBounds = MinimapWidget.getBounds();
+			if (previousMinimapBounds != null && !previousMinimapBounds.equals(currentMinimapBounds)) {
+				clientThread.invokeLater(() -> {
+					getProcessedMinimapArea();
+				});
+			}
+		}
+	}
+
 	@Override
 	public MouseEvent mousePressed(MouseEvent mouseEvent) {
 		if (zoomWhenRightClick && client.isMinimapZoom() && mouseEvent.getButton() == 3 && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
@@ -167,6 +183,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 			processedMinimapArea = null;
 		} else {
 			Rectangle minimapBounds = MinimapWidget.getBounds();
+			previousMinimapBounds = minimapBounds;
 			if (!client.isResized()) {
 				//It looks like RL's rightclick area for resetting the zoom is bigger than the Ellipse in fixed mode, so Rectangle2d it is.
 				preprocessedMinimapArea = new Area(new Rectangle2D.Double(minimapBounds.getX(), minimapBounds.getY(), minimapBounds.getWidth(), minimapBounds.getHeight()));
