@@ -270,8 +270,6 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	// ------------- Unused MouseListener methods -------------
 	@Override
 	public MouseEvent mouseDragged(MouseEvent mouseEvent) {
-		//Can add a hotkey listener and get the drag hoykey usig configmanager, but even then it looks like mousePressed or mouseDragged doesn't work while dragging widgets (at least with isAltDown)...
-		//Will get fixed while flicking the plugin on/off or hopping anyway. => Added onGameTick check
 		return mouseEvent;
 	}
 
