@@ -16,3 +16,8 @@ Example config of being maximally zoomed out when starting the client and zoomin
 ![Example config](src/main/resources/img/example-config.PNG)<br>
 
 If you experience any issues or have any concerns, please reach out to YvesW via a GitHub Issue, by Discord direct messaging or via the RuneLite Discord by mentioning @Yves W.
+
+## Changelog
+
+01-2023:
+- Added recalculation of the minimap area in case the minimap gets moved by the user. Hopping or flicking the option off and on is no longer needed.

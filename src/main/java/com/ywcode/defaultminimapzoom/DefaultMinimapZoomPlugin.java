@@ -15,9 +15,9 @@ import net.runelite.client.callback.*;
 import net.runelite.client.config.*;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.*;
-import net.runelite.client.input.MouseListener;
-import net.runelite.client.input.MouseManager;
+import net.runelite.client.input.*;
 import net.runelite.client.plugins.*;
+import net.runelite.client.util.*;
 
 
 @Slf4j
@@ -38,6 +38,8 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private Area preprocessedMinimapArea;
 	private Area processedMinimapArea;
 	private static Rectangle previousMinimapBounds;
+	private static Keybind dragHotkey;
+	private boolean inOverlayManagingMode = false;
 
 	@Inject
 	private Client client;
@@ -49,11 +51,18 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private MouseManager mouseManager;
 
 	@Inject
+	private KeyManager keyManager;
+
+	@Inject
+	private ConfigManager configManager;
+
+	@Inject
 	private ClientThread clientThread;
 
 	@Override
 	public void startUp() throws Exception {
 		updateConfig();
+		dragHotkey = configManager.getConfiguration("runelite","dragHotkey", Keybind.class);
 		if (client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 			loggedInOnce = true;
 			if (zoomWhenRightClick) {
@@ -63,25 +72,30 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 			}
 		}
 		mouseManager.registerMouseListener(this);
+		keyManager.registerKeyListener(hotkeyListener);
 	}
 
 	@Override
 	public void shutDown() {
 		mouseManager.unregisterMouseListener(this);
+		keyManager.unregisterKeyListener(hotkeyListener);
 	}
 
 	@Subscribe
-	public void onConfigChanged(ConfigChanged e) {
-		if (e.getGroup().equals("DefaultMinimapZoom")) {
+	public void onConfigChanged(ConfigChanged configChanged) {
+		if (configChanged.getGroup().equals("DefaultMinimapZoom")) {
 			updateConfig();
-			if (e.getKey().equals("zoomLevel") && client.isMinimapZoom() && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
+			if (configChanged.getKey().equals("zoomLevel") && client.isMinimapZoom() && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 				client.setMinimapZoom(zoomLevel);
 			}
-			if (zoomWhenRightClick && e.getKey().equals("zoomWhenRightClick") && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
+			if (zoomWhenRightClick && configChanged.getKey().equals("zoomWhenRightClick") && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 				clientThread.invokeLater(() -> {
 					getProcessedMinimapArea();
 				});
 			}
+		}
+		if (configChanged.getGroup().equals("runelite") && configChanged.getKey().equals("dragHotkey")) {
+			dragHotkey = configManager.getConfiguration("runelite", "dragHotkey", Keybind.class);
 		}
 	}
 
@@ -136,22 +150,18 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	public void onCanvasSizeChanged(CanvasSizeChanged canvasSizeChanged) { //Also screws over the area, at least in resizable mode.
 		if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 			clientThread.invokeLater(() -> {
-				getProcessedMinimapArea();
+				checkIfMinimapChanged();
 			});
 		}
 	}
 
 	@Subscribe
-	public void onGameTick(GameTick gameTick) {
-		//Account for dragging the minimap. Earlier experimentation with onDraggingWidgetChanged, getDraggedWidget, getDraggedOnWidget, client.isDraggingWidget was unsuccesful.
-		//Could potentially also check for client.isResized(), but this will account for any other discrepancies in the bounds as well.
-		if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom() && getMinimapWidget() != null) {
-			Rectangle currentMinimapBounds = getMinimapWidget().getBounds();
-			if (previousMinimapBounds != null && !previousMinimapBounds.equals(currentMinimapBounds)) {
-				clientThread.invokeLater(() -> {
-					getProcessedMinimapArea();
-				});
-			}
+	public void onFocusChanged(FocusChanged focusChanged) {
+		if (zoomWhenRightClick && inOverlayManagingMode && !focusChanged.isFocused() && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom() && client.isResized()) {
+			inOverlayManagingMode = false;
+			clientThread.invokeLater(() -> {
+				checkIfMinimapChanged();
+			});
 		}
 	}
 
@@ -163,8 +173,30 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 				mouseEvent.consume(); //If this is racey with the internal right-click on minimap code, or if this might trigger Jagex's anti-cheat, please let me know. However, a simple consume should definitely not trigger anti-cheat.
 			}
 		}
+		//Doesn't seem to trigger while dragHotkey is being pressed (while inOverlayManagingMode), since the mouseEvent is probably consumed by OverlayRenderer.java
+		//For that reason, let's use workaround by calling checkIfMinimapChanged() on hotkeyReleased() and onFocusChanged() if hotkey is currently down (might not catch hotkeyReleased event due to focus change)
 		return mouseEvent;
 	}
+
+	private final HotkeyListener hotkeyListener = new HotkeyListener(() -> dragHotkey) {
+		@Override
+		public void hotkeyPressed() {
+			if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom() && client.isResized()) {
+				inOverlayManagingMode = true;
+			}
+		}
+
+		@Override
+		public void hotkeyReleased() {
+			//Account for dragging the minimap. Earlier experimentation with onDraggingWidgetChanged, getDraggedWidget, getDraggedOnWidget, client.isDraggingWidget was unsuccesful.
+			if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom() && client.isResized()) {
+				inOverlayManagingMode = false;
+				clientThread.invokeLater(() -> {
+					checkIfMinimapChanged();
+				});
+			}
+		}
+	};
 
 	private Widget getMinimapWidget() {
 		if (client.isResized()) {
@@ -220,6 +252,17 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 			//The clickbox of all orbs seems to be a rectangular (not an ellipse).
 			OrbMinimapArea = new Area(new Rectangle2D.Double(minimapWidgetBounds.getX(), minimapWidgetBounds.getY(), minimapWidgetBounds.getWidth(), minimapWidgetBounds.getHeight()));
 			preprocessedMinimapArea.subtract(OrbMinimapArea);
+		}
+	}
+
+	private void checkIfMinimapChanged() {
+		if (getMinimapWidget() != null) {
+			Rectangle currentMinimapBounds = getMinimapWidget().getBounds();
+			if (previousMinimapBounds != null && !previousMinimapBounds.equals(currentMinimapBounds)) {
+				clientThread.invokeLater(() -> {
+					getProcessedMinimapArea();
+				});
+			}
 		}
 	}
 
