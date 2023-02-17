@@ -2,8 +2,9 @@ package com.ywcode.defaultminimapzoom;
 
 import com.google.inject.Provides;
 
+import java.applet.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.*;
 import javax.inject.Inject;
 
@@ -16,6 +17,7 @@ import net.runelite.client.config.*;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.*;
 import net.runelite.client.input.*;
+import net.runelite.client.input.MouseListener;
 import net.runelite.client.plugins.*;
 import net.runelite.client.util.*;
 
@@ -59,6 +61,10 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	@Inject
 	private ClientThread clientThread;
 
+	@SuppressWarnings("removal")
+	@Inject
+	private Applet clientApp;
+
 	@Override
 	public void startUp() throws Exception {
 		updateConfig();
@@ -71,6 +77,14 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 		}
 		mouseManager.registerMouseListener(this);
 		keyManager.registerKeyListener(hotkeyListener);
+
+		clientApp.addComponentListener(new ComponentAdapter() { // Seems to behave properly when opening/closing sidepanel unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves the bug for now.'
+			public void componentResized(ComponentEvent componentEvent) {
+				if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
+					checkIfMinimapChanged();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -137,13 +151,6 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	public void onWidgetClosed(WidgetClosed widgetClosed) { //Widget area is incorrect on Login Click to Play Screen, so get area when that widget is closed.
 		if (zoomWhenRightClick && widgetClosed.getGroupId() == WidgetID.LOGIN_CLICK_TO_PLAY_GROUP_ID) {
 			getProcessedMinimapArea();
-		}
-	}
-
-	@Subscribe
-	public void onCanvasSizeChanged(CanvasSizeChanged canvasSizeChanged) { //Also screws over the area, at least in resizable mode.
-		if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
-			checkIfMinimapChanged();
 		}
 	}
 

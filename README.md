@@ -19,5 +19,8 @@ If you experience any issues or have any concerns, please reach out to YvesW via
 
 ## Changelog
 
+02-2023:
+- Fixed a bug that incorrectly recalculated the minimap area when the sidepanel got opened/closed in resizable mode. "Set zoom when right-clicking minimap" should work again when in resizable.
+
 01-2023:
 - Added recalculation of the minimap area in case the minimap gets moved by the user. Hopping or flicking the option off and on is no longer needed.
