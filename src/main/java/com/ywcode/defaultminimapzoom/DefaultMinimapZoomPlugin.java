@@ -78,7 +78,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 		mouseManager.registerMouseListener(this);
 		keyManager.registerKeyListener(hotkeyListener);
 
-		clientApp.addComponentListener(new ComponentAdapter() { // Seems to behave properly when opening/closing sidepanel unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves the bug for now.'
+		clientApp.addComponentListener(new ComponentAdapter() { //Seems to behave properly when opening/closing sidepanel unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves the bug for now.
 			public void componentResized(ComponentEvent componentEvent) {
 				if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 					checkIfMinimapChanged();
