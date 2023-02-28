@@ -41,7 +41,8 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private Area processedMinimapArea;
 	private static Rectangle previousMinimapBounds;
 	private static Keybind dragHotkey;
-	private boolean inOverlayManagingMode = false;
+	private static boolean inOverlayManagingMode = false;
+	private static boolean gameTickDelay = false;
 
 	@Inject
 	private Client client;
@@ -78,10 +79,11 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 		mouseManager.registerMouseListener(this);
 		keyManager.registerKeyListener(hotkeyListener);
 
-		clientApp.addComponentListener(new ComponentAdapter() { //Seems to behave properly when opening/closing sidepanel unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves the bug for now.
+		clientApp.addComponentListener(new ComponentAdapter() { //Seems to behave properly when opening/closing sidepanel in resizable mode unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves that bug for now. Alternatively, switch back to onCanvasSizeChanged and just always delay by a gameTick.
 			public void componentResized(ComponentEvent componentEvent) {
 				if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 					checkIfMinimapChanged();
+					gameTickDelay = true;
 				}
 			}
 		});
@@ -159,6 +161,16 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 		if (zoomWhenRightClick && inOverlayManagingMode && !focusChanged.isFocused() && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom() && client.isResized()) {
 			inOverlayManagingMode = false;
 			checkIfMinimapChanged();
+		}
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick gameTick) { //Delay by a GameTick to fix the problem of very quickly resizing the client
+		if (gameTickDelay && zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom()) {
+			checkIfMinimapChanged();
+		}
+		if (gameTickDelay) {
+			gameTickDelay = false;
 		}
 	}
 
