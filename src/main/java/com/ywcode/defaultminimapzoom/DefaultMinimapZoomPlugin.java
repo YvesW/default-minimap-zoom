@@ -90,7 +90,6 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 			}
 
 			//These methods are unused but required to be present in a ComponentListener implementation
-			//TODO: check if this doesn't screw with the normal componentshown etc.
 			@Override
 			public void componentMoved(ComponentEvent componentEvent) {
 			}
