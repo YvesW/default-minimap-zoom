@@ -42,7 +42,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private static Rectangle previousMinimapBounds;
 	private static Keybind dragHotkey;
 	private static boolean inOverlayManagingMode = false;
-	private static boolean gameTickDelay = false;
+	private static int gameTickDelay = 2;
 	private ComponentListener componentListener;
 
 	@Inject
@@ -85,7 +85,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 			public void componentResized(ComponentEvent componentEvent) { //Seems to behave properly when opening/closing sidepanel in resizable mode unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves that bug for now. Alternatively, switch back to onCanvasSizeChanged and just always delay by a gameTick.
 				if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 					checkIfMinimapChanged();
-					gameTickDelay = true;
+					gameTickDelay = 0;
 				}
 			}
 
@@ -182,12 +182,12 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	}
 
 	@Subscribe
-	public void onGameTick(GameTick gameTick) { //Delay by a GameTick to fix the problem of very quickly resizing the client
-		if (gameTickDelay && zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom()) {
+	public void onGameTick(GameTick gameTick) { //Delay by a GameTick to fix the problem of very quickly resizing the client (sometimes doesn't work, so check again a GameTick later)
+		if (gameTickDelay < 2 && zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom()) {
 			checkIfMinimapChanged();
 		}
-		if (gameTickDelay) {
-			gameTickDelay = false;
+		if (gameTickDelay < 2) {
+			gameTickDelay++;
 		}
 	}
 
