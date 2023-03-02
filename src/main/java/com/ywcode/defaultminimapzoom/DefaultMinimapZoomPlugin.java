@@ -43,6 +43,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private static Keybind dragHotkey;
 	private static boolean inOverlayManagingMode = false;
 	private static boolean gameTickDelay = false;
+	private ComponentListener componentListener;
 
 	@Inject
 	private Client client;
@@ -79,20 +80,36 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 		mouseManager.registerMouseListener(this);
 		keyManager.registerKeyListener(hotkeyListener);
 
-		clientApp.addComponentListener(new ComponentAdapter() { //Seems to behave properly when opening/closing sidepanel in resizable mode unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves that bug for now. Alternatively, switch back to onCanvasSizeChanged and just always delay by a gameTick.
-			public void componentResized(ComponentEvent componentEvent) {
+		componentListener = new ComponentListener() {
+			@Override
+			public void componentResized(ComponentEvent componentEvent) { //Seems to behave properly when opening/closing sidepanel in resizable mode unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves that bug for now. Alternatively, switch back to onCanvasSizeChanged and just always delay by a gameTick.
 				if (zoomWhenRightClick && client.getGameState() != null && client.getGameState() == GameState.LOGGED_IN) {
 					checkIfMinimapChanged();
 					gameTickDelay = true;
 				}
 			}
-		});
+
+			//These methods are unused but required to be present in a ComponentListener implementation
+			@Override
+			public void componentMoved(ComponentEvent componentEvent) {
+			}
+
+			@Override
+			public void componentShown(ComponentEvent componentEvent) {
+			}
+
+			@Override
+			public void componentHidden(ComponentEvent componentEvent) {
+			}
+		};
+		clientApp.addComponentListener(componentListener);
 	}
 
 	@Override
 	public void shutDown() {
 		mouseManager.unregisterMouseListener(this);
 		keyManager.unregisterKeyListener(hotkeyListener);
+		clientApp.removeComponentListener(componentListener);
 	}
 
 	@Subscribe
