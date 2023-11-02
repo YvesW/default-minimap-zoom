@@ -35,13 +35,13 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private boolean zoomWhenLogin;
 	private boolean zoomWhenHopping;
 	private boolean zoomWhenRightClick;
-	private boolean currentlyHopping = false;
-	private boolean loggedInOnce = false;
+	private boolean currentlyHopping; //Default of boolean = false
+	private boolean loggedInOnce; //Default of boolean = false
 	private Area preprocessedMinimapArea;
 	private Area processedMinimapArea;
 	private static Rectangle previousMinimapBounds;
 	private static Keybind dragHotkey;
-	private static boolean inOverlayManagingMode = false;
+	private static boolean inOverlayManagingMode; //Default of boolean = false
 	private static int gameTickDelay = 2;
 	private ComponentListener componentListener;
 
@@ -159,7 +159,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 
 	@Subscribe
 	public void onWidgetLoaded (WidgetLoaded widgetLoaded) { //Widget has not loaded yet while GameState == LOGGED IN, so get area when widget has loaded.
-		if (zoomWhenRightClick && widgetLoaded.getGroupId() == WidgetID.MINIMAP_GROUP_ID) { //Works for both fixed and the two resizable modes
+		if (zoomWhenRightClick && widgetLoaded.getGroupId() == InterfaceID.MINIMAP) { //Works for both fixed and the two resizable modes
 			clientThread.invokeLater(() ->	{
 				getProcessedMinimapArea();
 			});
@@ -168,7 +168,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 
 	@Subscribe
 	public void onWidgetClosed(WidgetClosed widgetClosed) { //Widget area is incorrect on Login Click to Play Screen, so get area when that widget is closed.
-		if (zoomWhenRightClick && widgetClosed.getGroupId() == WidgetID.LOGIN_CLICK_TO_PLAY_GROUP_ID) {
+		if (zoomWhenRightClick && widgetClosed.getGroupId() == InterfaceID.LOGIN_CLICK_TO_PLAY_SCREEN) {
 			getProcessedMinimapArea();
 		}
 	}
@@ -225,11 +225,11 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private Widget getMinimapWidget() {
 		if (client.isResized()) {
 			if (client.getVarbitValue(Varbits.SIDE_PANELS) == 1) {
-				return client.getWidget(WidgetInfo.RESIZABLE_MINIMAP_DRAW_AREA);
+				return client.getWidget(ComponentID.RESIZABLE_VIEWPORT_BOTTOM_LINE_MINIMAP_DRAW_AREA);
 			}
-			return client.getWidget(WidgetInfo.RESIZABLE_MINIMAP_STONES_DRAW_AREA);
+			return client.getWidget(ComponentID.RESIZABLE_VIEWPORT_MINIMAP_DRAW_AREA);
 		}
-		return client.getWidget(WidgetInfo.FIXED_VIEWPORT_MINIMAP_DRAW_AREA);
+		return client.getWidget(ComponentID.FIXED_VIEWPORT_MINIMAP_DRAW_AREA);
 	}
 
 	private void getProcessedMinimapArea() {
@@ -245,15 +245,17 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 					preprocessedMinimapArea = new Area(new Rectangle2D.Double(minimapBounds.getX(), minimapBounds.getY(), minimapBounds.getWidth(), minimapBounds.getHeight()));
 					//FIXED MODE: Run energy orb, special attack orb, wiki orb, and compass overlap with the preprocessedMinimapArea in fixed mode.
 					//Hp orb, prayer orb, map orb and bonds orb don't overlap in fixed mode.
-					Widget energyOrbMinimapWidget = client.getWidget(WidgetInfo.MINIMAP_RUN_ORB.getGroupId(), 29); //Energy orb
+					Widget energyOrbMinimapWidget = client.getWidget(ComponentID.MINIMAP_TOGGLE_RUN_ORB); //Energy/run orb
 					removeOrbArea(energyOrbMinimapWidget);
-					Widget specOrbMinimapWidget = client.getWidget(WidgetInfo.MINIMAP_SPEC_ORB.getGroupId(), 37); //Spec orb
+					Widget specOrbMinimapWidget = client.getWidget(InterfaceID.MINIMAP, 36); //Spec orb
 					removeOrbArea(specOrbMinimapWidget);
+					Widget specOrbTopMinimapWidget = client.getWidget(InterfaceID.MINIMAP, 37); //To also remove the top edge of the spec orb. The additionally removed part is purely visually (not part of the clickbox)
+					removeOrbArea(specOrbTopMinimapWidget);
 					//RuneLite's rightclick on minimap seems to cut into the click area from the wiki button a bit.
 					//This means that a small part of the wiki button will reset the zoom to the wrong level, but so be it.
-					Widget wikiOrbMinimapWidget = client.getWidget(WidgetInfo.MINIMAP_WIKI_BANNER_PARENT).getChild(0); //Wiki orb
+					Widget wikiOrbMinimapWidget = client.getWidget(ComponentID.MINIMAP_WIKI_BANNER_PARENT).getChild(0); //Wiki orb
 					removeOrbArea(wikiOrbMinimapWidget);
-					Widget compassMinimapWidget = client.getWidget(WidgetInfo.FIXED_VIEWPORT_MINIMAP.getGroupId(), 23); //Compass
+					Widget compassMinimapWidget = client.getWidget(InterfaceID.FIXED_VIEWPORT, 23); //Compass
 					removeOrbArea(compassMinimapWidget);
 				} else {
 					//For the resizable modes however, it looks to be closer to Ellipse2D!
@@ -263,7 +265,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 					//Hp orb, prayer orb, run energy orb, special attack orb, wiki orb, bond orb, activity tracker orb and compass don't overlap in resizable classic.
 					//RESIZABLE MODERN (**NO** STONES DRAW AREA): since we use Ellipse, only the world map orb overlaps with the preprocessedMinimapArea
 					//Hp orb, prayer orb, run energy orb, special attack orb, wiki orb, bond orb, activity tracker orb and compass don't overlap in resizable modern.
-					Widget worldmapOrbMinimapWidget = client.getWidget(WidgetInfo.MINIMAP_WORLDMAP_OPTIONS); //World map orb
+					Widget worldmapOrbMinimapWidget = client.getWidget(ComponentID.MINIMAP_WORLDMAP_OPTIONS); //World map orb
 					removeOrbArea(worldmapOrbMinimapWidget);
 				}
 				processedMinimapArea = preprocessedMinimapArea;
@@ -275,7 +277,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 		Area OrbMinimapArea;
 		if (minimapWidget != null && !minimapWidget.isHidden()) {
 			Rectangle minimapWidgetBounds = minimapWidget.getBounds();
-			//The clickbox of all orbs seems to be a rectangular (not an ellipse).
+			//The clickbox of all orbs seems to be rectangular (not an ellipse).
 			OrbMinimapArea = new Area(new Rectangle2D.Double(minimapWidgetBounds.getX(), minimapWidgetBounds.getY(), minimapWidgetBounds.getWidth(), minimapWidgetBounds.getHeight()));
 			preprocessedMinimapArea.subtract(OrbMinimapArea);
 		}
