@@ -30,20 +30,21 @@ import net.runelite.client.util.*;
 )
 public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 
-	private double zoomLevel;
-	private boolean zoomWhenStartingClient;
-	private boolean zoomWhenLogin;
-	private boolean zoomWhenHopping;
-	private boolean zoomWhenRightClick;
-	private boolean currentlyHopping; //Default of boolean = false
-	private boolean loggedInOnce; //Default of boolean = false
-	private Area preprocessedMinimapArea;
-	private Area processedMinimapArea;
+	//Vars are quite heavily cached so could probably just config.configKey(). However, the best practice behavior in plugins is to have a bunch of variables to store the results of the config methods, and check it in startUp/onConfigChanged. It feels redundant, but it's better than hitting the reflective calls every frame. --LlemonDuck
+	private static double zoomLevel;
+	private static boolean zoomWhenStartingClient;
+	private static boolean zoomWhenLogin;
+	private static boolean zoomWhenHopping;
+	private static boolean zoomWhenRightClick;
+	private static boolean currentlyHopping; //Default of boolean = false
+	private static boolean loggedInOnce; //Default of boolean = false
+	private static Area preprocessedMinimapArea;
+	private static Area processedMinimapArea;
 	private static Rectangle previousMinimapBounds;
 	private static Keybind dragHotkey;
 	private static boolean inOverlayManagingMode; //Default of boolean = false
 	private static int gameTickDelay = 2;
-	private ComponentListener componentListener;
+	private static ComponentListener componentListener;
 
 	@Inject
 	private Client client;
