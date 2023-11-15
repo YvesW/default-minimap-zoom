@@ -15,10 +15,9 @@ Please make sure "Zoom" is enabled in the Minimap plugin and make sure that the 
 Example config of being maximally zoomed out when starting the client and zooming out when right-clicking the minimap:<br>
 ![Example config](docs/img/example-config.PNG)<br>
 
-If you experience any issues or have any concerns, please reach out to YvesW via a GitHub Issue, by Discord direct messaging or via the RuneLite Discord by mentioning @Yves W.
+If you experience any issues or have any concerns, please reach out to YvesW via a GitHub Issue, by Discord direct messaging or via the RuneLite Discord by mentioning @``YvesW``.
 
 ## Changelog
-
 02-2023:
 - Fixed a bug that incorrectly recalculated the minimap area when the side-panel got opened/closed in resizable mode. "Set zoom when right-clicking minimap" should work again when in resizable.
 
