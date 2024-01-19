@@ -84,7 +84,8 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 
 		componentListener = new ComponentListener() {
 			@Override
-			public void componentResized(ComponentEvent componentEvent) { //Seems to behave properly when opening/closing sidepanel in resizable mode unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves that bug for now. Alternatively, switch back to onCanvasSizeChanged and just always delay by a gameTick.
+			public void componentResized(ComponentEvent componentEvent) {
+				//Seems to behave properly when opening/closing sidepanel in resizable mode unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves that bug for now. Alternatively, switch back to onCanvasSizeChanged and just always delay by a gameTick. Edit: seems since flatlaf that it does not proc when opening the sidepanel anymore. It does still work perfectly, so maybe this even improved it a bit? If this turns out to be problematic at some point, replace with e.g. getting the top frame of client.getCanvas() as you've done in client-resizer.
 				if (zoomWhenRightClick && client.getGameState() == GameState.LOGGED_IN) {
 					checkIfMinimapChanged();
 					gameTickDelay = 0;
