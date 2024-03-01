@@ -73,12 +73,14 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	public void startUp() throws Exception {
 		updateConfig();
 		dragHotkey = configManager.getConfiguration("runelite", "dragHotkey", Keybind.class);
-		if (client.getGameState() == GameState.LOGGED_IN) {
-			loggedInOnce = true;
-			if (zoomWhenRightClick) {
-				getProcessedMinimapArea(); //If player is still hopping or on red login screen, it'll run getProcessedMinimapArea() in a bit again anyway.
+		clientThread.invokeLater(() -> {
+			if (client.getGameState() == GameState.LOGGED_IN) {
+				loggedInOnce = true;
+				if (zoomWhenRightClick) {
+					getProcessedMinimapArea(); //If player is still hopping or on red login screen, it'll run getProcessedMinimapArea() in a bit again anyway.
+				}
 			}
-		}
+		});
 		mouseManager.registerMouseListener(this);
 		keyManager.registerKeyListener(hotkeyListener);
 
