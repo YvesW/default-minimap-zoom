@@ -218,7 +218,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 
 		@Override
 		public void hotkeyReleased() {
-			//Account for dragging the minimap. Earlier experimentation with onDraggingWidgetChanged, getDraggedWidget, getDraggedOnWidget, client.isDraggingWidget was unsuccesful.
+			//Account for dragging the minimap. Earlier experimentation with onDraggingWidgetChanged, getDraggedWidget, getDraggedOnWidget, client.isDraggingWidget was unsuccessful.
 			if (zoomWhenRightClick && client.getGameState() == GameState.LOGGED_IN && client.isMinimapZoom() && client.isResized()) {
 				inOverlayManagingMode = false;
 				checkIfMinimapChanged();
