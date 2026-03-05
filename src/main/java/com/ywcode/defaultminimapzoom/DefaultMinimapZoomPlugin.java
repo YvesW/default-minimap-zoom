@@ -10,8 +10,8 @@ import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.ComponentID;
-import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -179,14 +179,14 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded widgetLoaded) { //Widget has not loaded yet while GameState == LOGGED IN, so get area when widget has loaded.
-		if (zoomWhenRightClick && widgetLoaded.getGroupId() == InterfaceID.MINIMAP) { //Works for both fixed and the two resizable modes
+		if (zoomWhenRightClick && widgetLoaded.getGroupId() == InterfaceID.ORBS) { //Works for both fixed and the two resizable modes
 			getProcessedMinimapArea();
 		}
 	}
 
 	@Subscribe
 	public void onWidgetClosed(WidgetClosed widgetClosed) { //Widget area is incorrect on Login Click to Play Screen, so get area when that widget is closed.
-		if (zoomWhenRightClick && widgetClosed.getGroupId() == InterfaceID.LOGIN_CLICK_TO_PLAY_SCREEN) {
+		if (zoomWhenRightClick && widgetClosed.getGroupId() == InterfaceID.WELCOME_SCREEN) {
 			getProcessedMinimapArea();
 		}
 	}
@@ -264,15 +264,15 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 					//Hp orb, prayer orb, map orb and bonds orb don't overlap in fixed mode.
 					Widget energyOrbMinimapWidget = client.getWidget(ComponentID.MINIMAP_TOGGLE_RUN_ORB); //Energy/run orb
 					removeOrbArea(energyOrbMinimapWidget);
-					Widget specOrbMinimapWidget = client.getWidget(InterfaceID.MINIMAP, 36); //Spec orb
+					Widget specOrbMinimapWidget = client.getWidget(InterfaceID.Orbs.ORB_SPECENERGY); //Spec orb
 					removeOrbArea(specOrbMinimapWidget);
-					Widget specOrbTopMinimapWidget = client.getWidget(InterfaceID.MINIMAP, 37); //To also remove the top edge of the spec orb. The additionally removed part is purely visually (not part of the clickbox)
+					Widget specOrbTopMinimapWidget = client.getWidget(InterfaceID.Orbs.SPECENERGY_BACKING); //To also remove the top edge of the spec orb. The additionally removed part is purely visually (not part of the clickbox)
 					removeOrbArea(specOrbTopMinimapWidget);
 					//RuneLite's rightclick on minimap seems to cut into the click area from the wiki button a bit.
 					//This means that a small part of the wiki button will reset the zoom to the wrong level, but so be it.
 					Widget wikiOrbMinimapWidget = Objects.requireNonNull(client.getWidget(ComponentID.MINIMAP_WIKI_BANNER_PARENT)).getChild(0); //Wiki orb
 					removeOrbArea(wikiOrbMinimapWidget);
-					Widget compassMinimapWidget = client.getWidget(InterfaceID.FIXED_VIEWPORT, 23); //Compass
+					Widget compassMinimapWidget = client.getWidget(InterfaceID.Toplevel.COMPASSCLICK); //Compass
 					removeOrbArea(compassMinimapWidget);
 				} else {
 					//For the resizable modes however, it looks to be closer to Ellipse2D!
