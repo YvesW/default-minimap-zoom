@@ -240,12 +240,12 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 
 	private Widget getMinimapWidget() {
 		if (client.isResized()) {
-			if (client.getVarbitValue(VarbitID.RESIZABLE_STONE_ARRANGEMENT) == 1) { // Used to be Varbits.SIDE_PANELS
-				return client.getWidget(InterfaceID.ToplevelPreEoc.MINIMAP); // Resizable modern. Used to be ComponentID.RESIZABLE_VIEWPORT_BOTTOM_LINE_MINIMAP_DRAW_AREA
+			if (client.getVarbitValue(VarbitID.RESIZABLE_STONE_ARRANGEMENT) == 1) { //Used to be Varbits.SIDE_PANELS
+				return client.getWidget(InterfaceID.ToplevelPreEoc.MINIMAP); //Resizable modern. Used to be ComponentID.RESIZABLE_VIEWPORT_BOTTOM_LINE_MINIMAP_DRAW_AREA
 			}
-			return client.getWidget(InterfaceID.ToplevelOsrsStretch.MINIMAP); // Resizable classic. Used to be ComponentID.RESIZABLE_VIEWPORT_MINIMAP_DRAW_AREA
+			return client.getWidget(InterfaceID.ToplevelOsrsStretch.MINIMAP); //Resizable classic. Used to be ComponentID.RESIZABLE_VIEWPORT_MINIMAP_DRAW_AREA
 		}
-		return client.getWidget(InterfaceID.Toplevel.MINIMAP); // Fixed/classic layout. Used to be ComponentID.FIXED_VIEWPORT_MINIMAP_DRAW_AREA
+		return client.getWidget(InterfaceID.Toplevel.MINIMAP); //Fixed/classic layout. Used to be ComponentID.FIXED_VIEWPORT_MINIMAP_DRAW_AREA
 	}
 
 	private void getProcessedMinimapArea() {
@@ -259,7 +259,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 				if (!client.isResized()) {
 					//It looks like RL's rightclick area for resetting the zoom is bigger than the Ellipse in fixed mode, so Rectangle2d it is.
 					preprocessedMinimapArea = new Area(new Rectangle2D.Double(minimapBounds.getX(), minimapBounds.getY(), minimapBounds.getWidth(), minimapBounds.getHeight()));
-					//FIXED MODE: Run energy orb, special attack orb, wiki orb, and compass overlap with the preprocessedMinimapArea in fixed mode.
+					//FIXED MODE: Run energy orb, special attack orb, wiki orb, and compass overlap with the preprocessedMinimapArea in fixed mode. The activity advisor does not.
 					//Hp orb, prayer orb, map orb and bonds orb don't overlap in fixed mode.
 					Widget energyOrbMinimapWidget = client.getWidget(InterfaceID.Orbs.RUNBUTTON); //Energy/run orb. Used to be ComponentID.MINIMAP_TOGGLE_RUN_ORB
 					removeOrbArea(energyOrbMinimapWidget);
@@ -283,6 +283,9 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 					//Hp orb, prayer orb, run energy orb, special attack orb, wiki orb, bond orb, activity tracker orb and compass don't overlap in resizable modern.
 					Widget worldmapOrbMinimapWidget = client.getWidget(InterfaceID.Orbs.WORLDMAP); //World map orb
 					removeOrbArea(worldmapOrbMinimapWidget);
+					//There is a very slight overlap with the activity advisor in resizable with the Ellipse2D. Alternatively ignore it because it is very minor
+					Widget activityAdvisorOrbMinimapWidget = client.getWidget(InterfaceID.Orbs.CR_BUTTON); //Activity advisor map orb
+					removeOrbArea(activityAdvisorOrbMinimapWidget);
 				}
 				processedMinimapArea = preprocessedMinimapArea;
 			}
