@@ -18,6 +18,11 @@ Example config of being maximally zoomed out when starting the client and zoomin
 If you experience any issues or have any concerns, please reach out to YvesW via a GitHub Issue, by Discord direct messaging or via the RuneLite Discord by mentioning @``YvesW``.
 
 ## Changelog
+07-2026:
+- Fixed the plugin; should be available again after removal of ``java.applet``.
+- Adds Activity Advisor support.
+- Adds support for minimizing/hiding the minimap in resizable.
+
 02-2023:
 - Fixed a bug that incorrectly recalculated the minimap area when the side-panel got opened/closed in resizable mode. ``Set zoom when right-clicking minimap`` should work again when in resizable.
 
