@@ -11,7 +11,6 @@ import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.VarbitID;
-import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -242,11 +241,11 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	private Widget getMinimapWidget() {
 		if (client.isResized()) {
 			if (client.getVarbitValue(VarbitID.RESIZABLE_STONE_ARRANGEMENT) == 1) { // Used to be Varbits.SIDE_PANELS
-				return client.getWidget(ComponentID.RESIZABLE_VIEWPORT_BOTTOM_LINE_MINIMAP_DRAW_AREA);
+				return client.getWidget(InterfaceID.ToplevelPreEoc.MINIMAP); // Resizable modern. Used to be ComponentID.RESIZABLE_VIEWPORT_BOTTOM_LINE_MINIMAP_DRAW_AREA
 			}
-			return client.getWidget(ComponentID.RESIZABLE_VIEWPORT_MINIMAP_DRAW_AREA);
+			return client.getWidget(InterfaceID.ToplevelOsrsStretch.MINIMAP); // Resizable classic. Used to be ComponentID.RESIZABLE_VIEWPORT_MINIMAP_DRAW_AREA
 		}
-		return client.getWidget(ComponentID.FIXED_VIEWPORT_MINIMAP_DRAW_AREA);
+		return client.getWidget(InterfaceID.Toplevel.MINIMAP); // Fixed/classic layout. Used to be ComponentID.FIXED_VIEWPORT_MINIMAP_DRAW_AREA
 	}
 
 	private void getProcessedMinimapArea() {
@@ -262,17 +261,17 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 					preprocessedMinimapArea = new Area(new Rectangle2D.Double(minimapBounds.getX(), minimapBounds.getY(), minimapBounds.getWidth(), minimapBounds.getHeight()));
 					//FIXED MODE: Run energy orb, special attack orb, wiki orb, and compass overlap with the preprocessedMinimapArea in fixed mode.
 					//Hp orb, prayer orb, map orb and bonds orb don't overlap in fixed mode.
-					Widget energyOrbMinimapWidget = client.getWidget(ComponentID.MINIMAP_TOGGLE_RUN_ORB); //Energy/run orb
+					Widget energyOrbMinimapWidget = client.getWidget(InterfaceID.Orbs.RUNBUTTON); //Energy/run orb. Used to be ComponentID.MINIMAP_TOGGLE_RUN_ORB
 					removeOrbArea(energyOrbMinimapWidget);
-					Widget specOrbMinimapWidget = client.getWidget(InterfaceID.ORBS, 36); //Spec orb. Used to be InterfaceID.MINIMAP
+					Widget specOrbMinimapWidget = client.getWidget(InterfaceID.Orbs.SPECBUTTON); //Spec orb. Used to be InterfaceID.MINIMAP, 36
 					removeOrbArea(specOrbMinimapWidget);
-					Widget specOrbTopMinimapWidget = client.getWidget(InterfaceID.ORBS, 37); //To also remove the top edge of the spec orb. The additionally removed part is purely visually (not part of the clickbox)
+					Widget specOrbTopMinimapWidget = client.getWidget(InterfaceID.Orbs.SPECENERGY_INDICATOR); //To also remove the top edge of the spec orb. The additionally removed part is purely visually (not part of the clickbox). Used to be InterfaceID.MINIMAP, 37. Think it should be 38 nowadays though. Luckily I can stop hardcoding this shit now (:
 					removeOrbArea(specOrbTopMinimapWidget);
 					//RuneLite's rightclick on minimap seems to cut into the click area from the wiki button a bit.
 					//This means that a small part of the wiki button will reset the zoom to the wrong level, but so be it.
-					Widget wikiOrbMinimapWidget = Objects.requireNonNull(client.getWidget(ComponentID.MINIMAP_WIKI_BANNER_PARENT)).getChild(0); //Wiki orb
+					Widget wikiOrbMinimapWidget = Objects.requireNonNull(client.getWidget(InterfaceID.Orbs.WIKI)).getChild(0); //Wiki orb. Used to be ComponentID.MINIMAP_WIKI_BANNER_PARENT
 					removeOrbArea(wikiOrbMinimapWidget);
-					Widget compassMinimapWidget = client.getWidget(InterfaceID.TOPLEVEL, 23); //Compass. Used to be InterfaceID.FIXED_VIEWPORT
+					Widget compassMinimapWidget = client.getWidget(InterfaceID.Toplevel.COMPASSCLICK); //Compass. Used to be InterfaceID.FIXED_VIEWPORT, 23. However post-changes 24 probs.
 					removeOrbArea(compassMinimapWidget);
 				} else {
 					//For the resizable modes however, it looks to be closer to Ellipse2D!
@@ -282,7 +281,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 					//Hp orb, prayer orb, run energy orb, special attack orb, wiki orb, bond orb, activity tracker orb and compass don't overlap in resizable classic.
 					//RESIZABLE MODERN (**NO** STONES DRAW AREA): since we use Ellipse, only the world map orb overlaps with the preprocessedMinimapArea
 					//Hp orb, prayer orb, run energy orb, special attack orb, wiki orb, bond orb, activity tracker orb and compass don't overlap in resizable modern.
-					Widget worldmapOrbMinimapWidget = client.getWidget(ComponentID.MINIMAP_WORLDMAP_OPTIONS); //World map orb
+					Widget worldmapOrbMinimapWidget = client.getWidget(InterfaceID.Orbs.WORLDMAP); //World map orb
 					removeOrbArea(worldmapOrbMinimapWidget);
 				}
 				processedMinimapArea = preprocessedMinimapArea;
