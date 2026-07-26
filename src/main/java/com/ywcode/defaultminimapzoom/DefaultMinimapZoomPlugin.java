@@ -25,7 +25,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.util.HotkeyListener;
 
 import javax.inject.Inject;
-import java.applet.*;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -77,10 +77,6 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 	@Inject
 	private ClientThread clientThread;
 
-	@SuppressWarnings("removal")
-	@Inject
-	private Applet clientApp;
-
 	@Override
 	public void startUp() throws Exception {
 		updateConfig();
@@ -99,7 +95,7 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 		componentListener = new ComponentListener() {
 			@Override
 			public void componentResized(ComponentEvent componentEvent) {
-				//Seems to behave properly when opening/closing sidepanel in resizable mode unlike onCanvasSizeChanged(). Still not ideal since it's still triggers when opening the sidepanel (as expected), but solves that bug for now. Alternatively, switch back to onCanvasSizeChanged and just always delay by a gameTick. Edit: seems since flatlaf that it does not proc when opening the sidepanel anymore. It does still work perfectly, so maybe this even improved it a bit? If this turns out to be problematic at some point, replace with e.g. getting the top frame of client.getCanvas() as you've done in client-resizer.
+				//Seems to behave properly when opening/closing sidepanel in resizable mode unlike onCanvasSizeChanged(). Still not ideal since it still triggers when opening the sidepanel (as expected), but solves that bug for now. Alternatively, switch back to onCanvasSizeChanged and just always delay by a gameTick.
 				if (zoomWhenRightClick && client.getGameState() == GameState.LOGGED_IN) {
 					checkIfMinimapChanged();
 					gameTickDelay = 0;
@@ -119,14 +115,16 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 			public void componentHidden(ComponentEvent componentEvent) {
 			}
 		};
-		clientApp.addComponentListener(componentListener);
+		JFrame topFrameClient = (JFrame) SwingUtilities.getWindowAncestor(client.getCanvas()); // Instead of using clientApp
+		topFrameClient.addComponentListener(componentListener);
 	}
 
 	@Override
 	public void shutDown() {
 		mouseManager.unregisterMouseListener(this);
 		keyManager.unregisterKeyListener(hotkeyListener);
-		clientApp.removeComponentListener(componentListener);
+		JFrame topFrameClient = (JFrame) SwingUtilities.getWindowAncestor(client.getCanvas());
+		topFrameClient.removeComponentListener(componentListener);
 	}
 
 	@Subscribe
