@@ -7,6 +7,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.events.FocusChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.gameval.InterfaceID;
@@ -171,6 +172,14 @@ public class DefaultMinimapZoomPlugin extends Plugin implements MouseListener {
 			}
 			loggedInOnce = true;
 			currentlyHopping = false;
+		}
+	}
+
+	@Subscribe
+	public void onVarbitChanged(VarbitChanged varbitChanged) {
+		if (varbitChanged.getVarbitId() == VarbitID.MINIMAP_TOGGLE) { //1 = hidden, 0 = unhidden
+			//This means the minimap gets minimized (hidden) or unhidden. Get the minimap area when this happens.
+			getProcessedMinimapArea();
 		}
 	}
 
